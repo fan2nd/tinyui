@@ -34,6 +34,33 @@ A reusable `#![no_std]`, allocation-free retained UI over `embedded-graphics`
   buffers. Save *current scene damage* before rendering for next frame; passing
   the already merged return damage repeatedly will unnecessarily accumulate it.
 
+## Installation
+
+```toml
+[dependencies]
+tiny-ui = { git = "https://github.com/fan2nd/tinyui.git", branch = "main" }
+embedded-graphics = "0.8.1"
+```
+
+For reproducible firmware releases, pin a reviewed commit with `rev` instead
+of tracking `branch`. This library builds on stable Rust and does not require
+an ESP toolchain, allocator, RTOS, or display driver.
+
+## Repository scope
+
+This repository was extracted from `fan2nd/esp32p4`, preserving the six commits
+that changed `3rd/tiny-ui` through parent commit `1b907d8`. Only the reusable
+framework is included. The P4 dashboard, seven-segment clock, Inter atlas,
+Wi-Fi/USB/audio services, framebuffer/DMA adaptation, and PC collection utility
+remain application code in that repository. The existing P4 checkout still
+uses its vendored copy; publishing this repository does not change that build.
+
+The public API and default appearance are preserved during extraction.
+`FontSize::Large` currently retains the legacy `FONT_10X20` font; the project
+blacklist prohibits introducing it elsewhere, and it must be replaced when
+that typography implementation is revised. The P4 application's newer Inter
+and seven-segment typography is not a framework feature.
+
 ## Module layout
 
 - `components.rs`: configurable widget data, bounds and local interaction state.
@@ -49,11 +76,23 @@ need import changes. The framework remains `no_std` and allocator-free.
 
 ## Validation
 
-This project does not contain or add unit tests (see the root `AGENTS.md`).
-Use `cargo check --target riscv32imafc-unknown-none-elf`, `cargo fmt --check`, and
-`cargo clippy --lib --target x86_64-unknown-linux-gnu -- -D warnings` from this
-crate. Firmware builds, source/visual review and on-board operation are distinct
-checks; physical input/display timing still requires hardware validation.
+This project does not add unit tests or test scripts (see `AGENTS.md`).
+Run these commands from the repository root:
+
+```sh
+cargo +stable check --locked
+cargo +stable fmt --check
+cargo +stable clippy --locked --lib -- -D warnings
+rustup target add riscv32imafc-unknown-none-elf --toolchain stable
+cargo +stable check --locked --target riscv32imafc-unknown-none-elf
+```
+
+The host build checks portability; the RISC-V target checks `no_std` compilation.
+Neither replaces visual and touch validation on the consuming device.
+
+Extraction validation (2026-11-08): all four Cargo checks above passed on Windows;
+Clippy ran with warnings denied. All 11 Rust source files match the original
+framework. No new hardware behavior was introduced or separately flashed.
 
 ## Minimal composition (no page-specific API)
 
@@ -95,3 +134,8 @@ background without allocation. Applications own icon artwork and attribution.
 `Style::border_width` controls normal rounded control outlines; the default is
 one logical pixel and the stroke stays inside the widget bounds. This persistent
 control boundary is separate from keyboard-only focus feedback.
+
+## License
+
+Licensed under either the MIT license (`LICENSE-MIT`) or the Apache License,
+Version 2.0 (`LICENSE-APACHE`), at your option, matching the original crate metadata.

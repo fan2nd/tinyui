@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Allocation-free embedded-graphics components and retained scene"
-[workspace]
+repository = "https://github.com/fan2nd/tinyui"
+readme = "README.md"
+keywords = ["embedded", "gui", "no-std", "embedded-graphics"]
+categories = ["embedded", "no-std", "gui"]
 [dependencies]
 embedded-graphics = "0.8.1"
